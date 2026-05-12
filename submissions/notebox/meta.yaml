@@ -1,0 +1,12 @@
+# Parent record fields (see spec §2 "字段描述").
+repo_url: https://github.com/alive-worker/worker
+repo_type: 公有
+language: Python
+dockerfile: ./Dockerfile          # also lives at repo root, copy here for upload
+repo: ./repo.zip                  # zipped initial scene of the repository
+environment_notes: |
+  Single-service FastAPI + SQLite project. No external services required.
+  After `docker build`, run `docker run --rm -it notebox` and you land in
+  /app with a clean git repo and dependencies pre-installed. To exercise the
+  API: `python -m scripts.seed && uvicorn app.main:app --host 0.0.0.0`.
+task_count: 8

@@ -1,0 +1,9 @@
+task_index,prompt,difficulty,category,tech_stack,module_tags
+1,"给 /notes 列表接口加一个 order 查询参数，支持 order=created_asc 或 created_desc，默认按创建时间倒序。改完跑一下 pytest 看有没有把已有用例打挂。",简单,功能迭代,"Python,FastAPI,SQLAlchemy","api/notes,schemas"
+2,"删 tag 的时候发现 note_tag 关联表里还留着这个 tag 的行，导致后面查 note 会拿到一个空的 tag 引用。帮我修一下 app/api/tags.py 里的 delete_tag，确保删除标签时把关联也清掉，并补一条 pytest 用例覆盖这个场景。",简单,Bug修复/调试,"Python,FastAPI,SQLAlchemy,pytest","api/tags,models,tests/test_tags"
+3,"读一下 app/services/search.py，写一段不超过 200 字的说明告诉我它现在是怎么打分和截 snippet 的，以及当 notes 表很大时这种实现有什么问题。",简单,代码理解与分析,"Python,SQLAlchemy",services/search
+4,"tests/test_tags.py 里只测了创建和列出，删除标签和重复名校验都没覆盖。请按现有写法补齐 delete_tag 成功、删除不存在 tag 返回 404、重名冲突这三组用例。",中等,测试,"Python,pytest,FastAPI","tests/test_tags,api/tags"
+5,"现在 /export?format=markdown 会把所有 note 一次性吐出来，请加一个可选的 tag 过滤参数：/export?format=markdown&tag=python 只导出带 python 标签的笔记。JSON 格式也要支持同样的参数。",中等,功能迭代,"Python,FastAPI,SQLAlchemy","api/export,services/export"
+6,"app/main.py 里直接 include 了四个 router，我想把路由注册收敛到 app/api/__init__.py 提供一个 register_routers(app) 函数，main.py 只调一次。重构完保持所有现有路径不变，pytest 全部能过。",中等,代码重构,"Python,FastAPI","app/main,api"
+7,"把 Dockerfile 改造成多阶段构建：第一阶段装编译依赖并 pip wheel 到一个目录，第二阶段用 python:3.11-slim 只 COPY 装好的依赖和源码进去；最终镜像保持 WORKDIR /app、git 初始化、默认 shell 这些规范要求不变。再加一个 HEALTHCHECK 调用 /health。",困难,DevOps/工程化,"Docker,Python,FastAPI","Dockerfile,app/main"
+8,"现在 /search 用的是 LIKE 全表扫，notes 上了几千条就慢。请引入 SQLite FTS5：建一个 notes_fts 虚拟表，写一段在 startup 时把现有数据回填进去的逻辑，改 app/services/search.py 改成查 FTS5（保持 SearchHit 字段不变），新增对应的 pytest 覆盖中文和英文搜索。",困难,功能迭代,"Python,SQLite,FastAPI,SQLAlchemy,pytest","services/search,api/search,models,db,tests/test_search"

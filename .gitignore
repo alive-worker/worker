@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.env
+.pytest_cache/
+.coverage
+notebox.db
+notebox.db-journal
+*.egg-info/
+dist/
+build/
+.idea/
+.vscode/
