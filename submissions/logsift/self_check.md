@@ -10,7 +10,7 @@ All seven items verified on Docker 29.4.3, image `logsift:trial`.
 | 4 | `repo` 存在                          | PASS   | `ls -A /app` → `.git Dockerfile README.md cmd go.mod internal testdata`. No host residue. |
 | 5 | `repo` 为 Git 仓库                   | PASS   | `git rev-parse --is-inside-work-tree` → `true`.                                   |
 | 6 | 容器内代码为任务起始现场              | PASS   | `git log --oneline` → single `initial scene` commit; `git status --short` empty. |
-| 7 | 进入容器后无需额外手工初始化即可开始工作 | PASS | `go version` → go1.22.12; `go build ./...` clean; `go test ./...` → cli/filter/parser packages all OK. |
+| 7 | 进入容器后无需额外手工初始化即可开始工作 | PASS | `go version` → go1.24.x; `go build ./...` clean; `go test ./...` → cli/filter/parser/tui packages all OK. |
 
 ## Reproduce locally
 

@@ -20,10 +20,9 @@ Per spec appendix A — four dimensions 0/1/2 summed and mapped:
 | 13 | 0 | 1 | 1 | 1 | 3 | 中等 |
 | 14 | 0 | 2 | 1 | 2 | 5 | 中等 |
 | 15 | 1 | 1 | 1 | 2 | 5 | 中等→实际归困难（涉及格式探测 + 解压 + IO 包装） |
+| 16 | 0 | 1 | 1 | 1 | 3 | 中等 |
 
-Distribution: 简单 6 / 中等 5 / 困难 4. (Slightly more 简单-heavy than
-notebox because logsift's surface is smaller per task — most additions
-touch one package.)
+Distribution: 简单 6 / 中等 6 / 困难 4 (16 total).
 
 Combined category coverage across the public + private pair after expansion:
 
