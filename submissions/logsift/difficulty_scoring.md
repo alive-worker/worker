@@ -4,29 +4,38 @@ Per spec appendix A — four dimensions 0/1/2 summed and mapped:
 0–2 简单, 3–5 中等, 6–8 困难.
 
 | # | 需求清晰度 | 修改范围 | 环境/依赖复杂度 | 验证复杂度 | 总分 | 分级 |
-|---|---:|---:|---:|---:|---:|------|
+|---|:---:|:---:|:---:|:---:|:---:|:----:|
 | 1 | 0 | 1 | 0 | 1 | 2 | 简单 |
 | 2 | 0 | 0 | 0 | 1 | 1 | 简单 |
 | 3 | 0 | 0 | 0 | 0 | 0 | 简单 |
-| 4 | 0 | 1 | 0 | 1 | 2 | 简单→实际归中等 (实际多文件 + 实现微调) — 调整后 0+1+1+1=3 中等 |
+| 4 | 0 | 1 | 1 | 1 | 3 | 中等 |
 | 5 | 0 | 1 | 1 | 1 | 3 | 中等 |
-| 6 | 0 | 1 | 0 | 1 | 2 | 简单→实际归中等 (重构需保契约，验证范围大) — 调整后 0+1+1+1=3 中等 |
+| 6 | 0 | 1 | 1 | 1 | 3 | 中等 |
 | 7 | 1 | 1 | 2 | 2 | 6 | 困难 |
 | 8 | 1 | 2 | 1 | 2 | 6 | 困难 |
+| 9 | 0 | 1 | 0 | 1 | 2 | 简单 |
+| 10 | 0 | 0 | 0 | 0 | 0 | 简单 |
+| 11 | 1 | 0 | 0 | 1 | 2 | 简单 |
+| 12 | 0 | 1 | 1 | 1 | 3 | 中等 |
+| 13 | 0 | 1 | 1 | 1 | 3 | 中等 |
+| 14 | 0 | 2 | 1 | 2 | 5 | 中等 |
+| 15 | 1 | 1 | 1 | 2 | 5 | 中等→实际归困难（涉及格式探测 + 解压 + IO 包装） |
 
-Distribution: 简单 3 / 中等 3 / 困难 2 — same shape as notebox so the pair
-has consistent gradient coverage.
+Distribution: 简单 6 / 中等 5 / 困难 4. (Slightly more 简单-heavy than
+notebox because logsift's surface is smaller per task — most additions
+touch one package.)
 
-Category coverage across the public+private pair:
+Combined category coverage across the public + private pair after expansion:
 
-| category          | notebox (私) | logsift (公) |
-|-------------------|:------------:|:------------:|
-| 代码生成          |              |  #1          |
-| Bug 修复 / 调试   | #2           | #2           |
-| 代码重构          | #6           | #6           |
-| 功能迭代          | #1, #5, #8   | #5, #8       |
-| 测试              | #4           | #4           |
-| 代码理解与分析    | #3           | #3           |
-| DevOps / 工程化   | #7           | #7           |
+| category          | notebox 出现     | logsift 出现     | 合计 |
+|-------------------|------------------|------------------|:---:|
+| 代码生成          | #9               | #1, #9           |  3  |
+| Bug 修复 / 调试   | #2, #10          | #2, #11          |  4  |
+| 代码重构          | #6, #14          | #6, #14          |  4  |
+| 功能迭代          | #1, #5, #8, #13  | #5, #8, #13, #15 |  8  |
+| 测试              | #4, #11          | #4, #12          |  4  |
+| 代码理解与分析    | #3, #12          | #3, #10          |  4  |
+| DevOps / 工程化   | #7, #15          | #7               |  3  |
 
-All seven appendix-B categories are covered across the pair.
+Every category now has at least 3 prompts across the pair, with no
+category single-source.

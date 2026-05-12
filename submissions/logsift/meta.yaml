@@ -10,4 +10,4 @@ environment_notes: |
   container ships with go 1.22, git, curl, tmux. When entering the
   container, invoke `bash -c` (not `bash -lc`) so /etc/profile does not
   strip /usr/local/go/bin from PATH.
-task_count: 8
+task_count: 15
