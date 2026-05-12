@@ -1,7 +1,7 @@
 # Parent record fields (see spec §2 "字段描述").
 repo_url: https://github.com/alive-worker/worker
-repo_type: 私有
-language: Python
+repo_type: 私有仓库
+language: Python + FastAPI + SQLAlchemy + SQLite
 dockerfile: ./Dockerfile          # also lives at repo root, copy here for upload
 repo: ./repo.zip                  # zipped initial scene of the repository
 environment_notes: |

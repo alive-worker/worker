@@ -1,0 +1,21 @@
+﻿repo_url,repo_type,language,dockerfile,repo,environment_notes,task_count,task_index,prompt,difficulty,category,tech_stack,module_tags
+https://github.com/alive-worker/worker,私有仓库,Python + FastAPI + SQLAlchemy + SQLite,./Dockerfile,./repo.zip,"Single-service FastAPI + SQLite project. No external services required.
+After `docker build`, run `docker run --rm -it notebox` and you land in
+/app with a clean git repo and dependencies pre-installed. To exercise the
+API: `python -m scripts.seed && uvicorn app.main:app --host 0.0.0.0`.",16,,,,,,
+,,,,,,,1,给 /notes 列表接口加一个 order 查询参数，支持 order=created_asc 或 created_desc，默认按创建时间倒序。改完跑一下 pytest 看有没有把已有用例打挂。,简单,功能迭代,"Python, FastAPI, SQLAlchemy","笔记 CRUD, 数据模型"
+,,,,,,,2,SQLite 默认 PRAGMA foreign_keys=OFF，意味着 models.py 里写的 ondelete=CASCADE 其实在数据库层根本没强制执行——目前只是靠 SQLAlchemy 关系层兜底。请在 app/db.py 用 SQLAlchemy event 监听器，每次新连接时打开 PRAGMA foreign_keys=ON；同时把 app/api/tags.py 的 delete_tag 改成先显式删 note_tag 里的关联再删 tag，避免依赖 ORM 关系层；补 pytest 用例：删 tag 后直接 raw SQL 查 note_tag 表确认没残留。,中等,Bug 修复 / 调试,"Python, FastAPI, SQLAlchemy, SQLite, pytest","标签管理, 数据库连接配置, 测试基建"
+,,,,,,,3,读一下 app/services/search.py，写一段不超过 200 字的说明告诉我它现在是怎么打分和截 snippet 的，以及当 notes 表很大时这种实现有什么问题。,简单,代码理解与分析,"Python, SQLAlchemy",全文搜索
+,,,,,,,4,tests/test_tags.py 里只测了创建和列出，删除标签和重复名校验都没覆盖。请按现有写法补齐 delete_tag 成功、删除不存在 tag 返回 404、重名冲突这三组用例。,中等,测试,"Python, pytest, FastAPI","标签管理, 测试基建"
+,,,,,,,5,现在 /export?format=markdown 会把所有 note 一次性吐出来，请加一个可选的 tag 过滤参数：/export?format=markdown&tag=python 只导出带 python 标签的笔记。JSON 格式也要支持同样的参数。,中等,功能迭代,"Python, FastAPI, SQLAlchemy","数据导出, 标签管理"
+,,,,,,,6,app/main.py 里直接 include 了四个 router，我想把路由注册收敛到 app/api/__init__.py 提供一个 register_routers(app) 函数，main.py 只调一次。重构完保持所有现有路径不变，pytest 全部能过。,中等,代码重构,"Python, FastAPI","应用入口, 路由注册"
+,,,,,,,7,把 Dockerfile 改造成多阶段构建：第一阶段装编译依赖并 pip wheel 到一个目录，第二阶段用 python:3.11-slim 只 COPY 装好的依赖和源码进去；最终镜像保持 WORKDIR /app、git 初始化、默认 shell 这些规范要求不变。再加一个 HEALTHCHECK 调用 /health。,困难,DevOps / 工程化,"Docker, Python, FastAPI","运维 / 工程化, 应用入口"
+,,,,,,,8,现在 /search 用的是 LIKE 全表扫，notes 上了几千条就慢。请引入 SQLite FTS5：建一个 notes_fts 虚拟表，写一段在 startup 时把现有数据回填进去的逻辑，改 app/services/search.py 改成查 FTS5（保持 SearchHit 字段不变），新增对应的 pytest 覆盖中文和英文搜索。,困难,功能迭代,"Python, SQLite, FastAPI, SQLAlchemy, pytest","全文搜索, 数据迁移, 测试基建"
+,,,,,,,9,"加一个 GET /notes/count 接口：返回 {总数, 按标签分桶}。by_tag 只统计实际有 note 使用的 tag。补一条 pytest。",简单,代码生成,"Python, FastAPI, SQLAlchemy, pytest","笔记 CRUD, 统计聚合, 测试基建"
+,,,,,,,10,_get_or_create_tags 现在用 dict 在请求内做了去重，但有个边界：传 tags 是带前后空格的同名字符串时 strip + lower 之后是同一个，确实只会创建一个；但传全空白的元素时 dict 直接跳过——这个行为合理但没测过。请补几条 pytest：1) 带空格的同名 tag 只创建一个；2) 全空白被静默跳过；3) 同请求内传同一名 tag 三次只创建一个关联。,中等,测试,"Python, FastAPI, SQLAlchemy, pytest","标签管理, 测试基建"
+,,,,,,,11,给 app/services/search.py 写一组 pytest 参数化用例覆盖：1) 关键词只在 body 出现 2) 大小写混合 3) 空字符串应该被 router 拦下 4) 中文关键词 5) limit=0 的边界行为。用 pytest.mark.parametrize。,中等,测试,"Python, pytest, FastAPI","全文搜索, 测试基建"
+,,,,,,,12,读一下 app/main.py 里的 lifespan 和 tests/conftest.py 里的 _fresh_db，写 200 字以内告诉我：lifespan 在 TestClient 里什么时候被触发？conftest 里为什么仍然要手工调一次 init_db？删掉它会出什么问题？,简单,代码理解与分析,"Python, FastAPI, pytest","应用入口, 测试基建"
+,,,,,,,13,现有的 GET /notes 和 GET /tags 都是一次返回全部。请加分页：?limit=20&offset=0，limit 默认 20、最大 100；同时在响应头加 X-Total-Count 返回未分页的总数。改完保持原有路径和返回 body shape 不变，更新对应 pytest。,中等,功能迭代,"Python, FastAPI, SQLAlchemy, pytest","笔记 CRUD, 标签管理, 分页能力"
+,,,,,,,14,现在 router 里直接拿 Session 操作 ORM，单测要起整个 app 才能跑。请引入一个 repositories 层（NoteRepo、TagRepo），把所有 db.add/db.execute/db.delete 都搬过去，router 只调 repo 方法。重构完 pytest 全部能过，路径和返回不变。,困难,代码重构,"Python, FastAPI, SQLAlchemy, pytest","数据访问层, 笔记 CRUD, 标签管理"
+,,,,,,,15,目前启动靠 Base.metadata.create_all 建表，没法处理 schema 变更。请引入 alembic：alembic init migrations，把现有 schema 生成一个 0001 初始迁移；在 lifespan 里用 alembic 的 command.upgrade 跑到 head 而不是 create_all；写一个 alembic.ini 让它读 NOTEBOX_DB_URL。改完容器内 pytest 仍然能过。,困难,DevOps / 工程化,"Python, FastAPI, alembic, SQLAlchemy","数据迁移, 应用入口"
+,,,,,,,16,现有的 web/index.html UI 缺少 tag 管理界面：列不出所有 tag、不能单独删 tag、点 tag 不能筛选。请在同一个 index.html 里加一个左侧或底部的 Tag 面板，调 GET /tags 列出，点 tag 后只显示带该 tag 的笔记（前端用现有 /notes 过滤即可，不要新建后端接口），鼠标悬停时显示一个 × 调 DELETE /tags/{id}。保持单文件、不引入构建工具、不引入 npm。,中等,代码生成,"HTML, JavaScript, FastAPI","Web UI, 标签管理"

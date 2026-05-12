@@ -1,7 +1,7 @@
 # Parent record fields (see spec §2 "字段描述").
 repo_url: https://github.com/alive-worker/logsift
-repo_type: 公有
-language: Go
+repo_type: 公有仓库
+language: Go + bubbletea + lipgloss
 dockerfile: ./Dockerfile          # copy of the repo-root Dockerfile
 repo: ./repo.zip                  # zipped initial scene
 environment_notes: |
