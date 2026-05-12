@@ -10,18 +10,21 @@ router = APIRouter(prefix="/notes", tags=["notes"])
 
 
 def _get_or_create_tags(db: Session, names: list[str]) -> list[Tag]:
-    tags: list[Tag] = []
+    # In-request dedupe so a payload like ["python", "PYTHON"] resolves to a
+    # single Tag rather than producing two entries in the secondary table
+    # (which would violate its primary-key constraint).
+    seen: dict[str, Tag] = {}
     for raw in names:
         name = raw.strip().lower()
-        if not name:
+        if not name or name in seen:
             continue
         tag = db.execute(select(Tag).where(Tag.name == name)).scalar_one_or_none()
         if tag is None:
             tag = Tag(name=name)
             db.add(tag)
             db.flush()
-        tags.append(tag)
-    return tags
+        seen[name] = tag
+    return list(seen.values())
 
 
 @router.get("", response_model=list[NoteOut])

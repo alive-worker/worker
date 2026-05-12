@@ -40,3 +40,13 @@ def test_delete_note(client):
 
 def test_get_missing_note_returns_404(client):
     assert client.get("/notes/9999").status_code == 404
+
+
+def test_create_note_dedupes_case_variant_tags(client):
+    r = client.post(
+        "/notes",
+        json={"title": "x", "body": "", "tags": ["python", "PYTHON", "  python  ", "docker", "", "  "]},
+    )
+    assert r.status_code == 201
+    names = sorted(t["name"] for t in r.json()["tags"])
+    assert names == ["docker", "python"]
