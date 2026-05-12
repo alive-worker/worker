@@ -9,4 +9,4 @@ environment_notes: |
   After `docker build`, run `docker run --rm -it notebox` and you land in
   /app with a clean git repo and dependencies pre-installed. To exercise the
   API: `python -m scripts.seed && uvicorn app.main:app --host 0.0.0.0`.
-task_count: 15
+task_count: 16

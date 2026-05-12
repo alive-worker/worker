@@ -20,8 +20,9 @@ Per spec appendix A — four dimensions 0/1/2 summed and mapped:
 | 13 | 0 | 1 | 1 | 1 | 3 | 中等 |
 | 14 | 1 | 2 | 1 | 2 | 6 | 困难 |
 | 15 | 1 | 2 | 2 | 2 | 7 | 困难 |
+| 16 | 0 | 1 | 1 | 1 | 3 | 中等 |
 
-Distribution: 简单 5 / 中等 6 / 困难 4.
+Distribution: 简单 5 / 中等 7 / 困难 4 (16 total).
 
 Notes:
 - Tasks #9/#10 keep the difficulty under 3 because they're localised

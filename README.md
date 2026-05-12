@@ -31,6 +31,9 @@ uvicorn app.main:app --reload
 ```
 
 OpenAPI docs at <http://127.0.0.1:8000/docs>.
+A minimal in-browser UI is served at <http://127.0.0.1:8000/ui/> (and `/`
+redirects there). It is a single static HTML page that talks to the same
+HTTP API.
 
 ### Running tests
 
@@ -99,6 +102,8 @@ uvicorn app.main:app --reload
 ```
 
 OpenAPI 文档地址：<http://127.0.0.1:8000/docs>。
+浏览器极简 UI 地址：<http://127.0.0.1:8000/ui/>（访问 `/` 会重定向到这里）。
+它是一个单文件静态页面，直接调用同一份 HTTP API。
 
 ### 跑测试
 

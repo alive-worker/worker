@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>notebox</title>
+<style>
+  :root {
+    --bg: #fafaf7;
+    --panel: #fff;
+    --border: #e5e3dc;
+    --text: #1f1f1f;
+    --muted: #6a6a66;
+    --accent: #2563eb;
+    --danger: #b91c1c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+  header h1 { margin: 0; font-size: 18px; font-weight: 600; }
+  header small { color: var(--muted); }
+  main {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 16px;
+    padding: 16px 24px;
+    align-items: start;
+  }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .panel h2 { margin: 0 0 12px; font-size: 14px; font-weight: 600; }
+  label { display: block; font-size: 12px; color: var(--muted); margin: 8px 0 4px; }
+  input, textarea, button {
+    font: inherit;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    width: 100%;
+    background: #fff;
+    color: inherit;
+  }
+  textarea { resize: vertical; min-height: 96px; }
+  button {
+    width: auto;
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    cursor: pointer;
+    padding: 8px 14px;
+  }
+  button.secondary {
+    background: #fff;
+    color: var(--text);
+    border-color: var(--border);
+  }
+  button.danger {
+    background: #fff;
+    color: var(--danger);
+    border-color: var(--border);
+  }
+  .row { display: flex; gap: 8px; align-items: center; }
+  .row > * { flex: 1; }
+  .row > button { flex: 0 0 auto; }
+  .note {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 12px;
+    background: #fff;
+  }
+  .note-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .note-title { font-weight: 600; }
+  .note-meta { font-size: 11px; color: var(--muted); }
+  .note-body { white-space: pre-wrap; color: #333; margin: 6px 0 8px; }
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    background: #eef2ff;
+    color: #3730a3;
+    padding: 2px 8px;
+    border-radius: 999px;
+    margin-right: 4px;
+  }
+  .empty { color: var(--muted); padding: 24px 0; text-align: center; }
+  .toast {
+    position: fixed; bottom: 16px; right: 16px;
+    background: #111; color: #fff; padding: 10px 14px; border-radius: 6px;
+    font-size: 13px; opacity: 0; transition: opacity .2s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<header>
+  <h1>notebox</h1>
+  <small>tiny notes UI talking to the notebox API</small>
+</header>
+<main>
+  <section class="panel" id="composer">
+    <h2>New note</h2>
+    <label for="title">Title</label>
+    <input id="title" placeholder="e.g. SQLite WAL notes" />
+    <label for="body">Body</label>
+    <textarea id="body" placeholder="markdown supported on the API side"></textarea>
+    <label for="tags">Tags (comma separated)</label>
+    <input id="tags" placeholder="python, sqlite" />
+    <div class="row" style="margin-top: 12px; justify-content: flex-end;">
+      <button id="create">Create</button>
+    </div>
+  </section>
+
+  <section class="panel" id="list-panel">
+    <h2 style="display:flex;justify-content:space-between;align-items:center;">
+      <span>Notes</span>
+      <span class="row" style="max-width:260px;">
+        <input id="q" placeholder="search…" />
+        <button id="search" class="secondary">Go</button>
+        <button id="reset" class="secondary">All</button>
+      </span>
+    </h2>
+    <div id="notes"></div>
+  </section>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = (sel) => document.querySelector(sel);
+const notesEl = $("#notes");
+const toastEl = $("#toast");
+
+function toast(msg) {
+  toastEl.textContent = msg;
+  toastEl.classList.add("show");
+  setTimeout(() => toastEl.classList.remove("show"), 1600);
+}
+
+async function api(path, opts = {}) {
+  const res = await fetch(path, {
+    headers: { "content-type": "application/json" },
+    ...opts,
+  });
+  if (!res.ok && res.status !== 204) {
+    throw new Error(`${res.status} ${await res.text()}`);
+  }
+  if (res.status === 204) return null;
+  return res.json();
+}
+
+function renderNotes(notes) {
+  if (!notes.length) {
+    notesEl.innerHTML = `<div class="empty">no notes yet</div>`;
+    return;
+  }
+  notesEl.innerHTML = notes.map(n => `
+    <article class="note" data-id="${n.id}">
+      <div class="note-head">
+        <span class="note-title"></span>
+        <span class="note-meta"></span>
+      </div>
+      <div class="note-body"></div>
+      <div class="note-tags"></div>
+      <div class="row" style="margin-top:8px; justify-content:flex-end;">
+        <button class="danger del">Delete</button>
+      </div>
+    </article>
+  `).join("");
+  // Set text content separately to avoid HTML injection.
+  notes.forEach(n => {
+    const root = notesEl.querySelector(`[data-id="${n.id}"]`);
+    root.querySelector(".note-title").textContent = n.title;
+    root.querySelector(".note-meta").textContent = new Date(n.created_at).toLocaleString();
+    root.querySelector(".note-body").textContent = n.body;
+    const tagsBox = root.querySelector(".note-tags");
+    tagsBox.innerHTML = "";
+    n.tags.forEach(t => {
+      const s = document.createElement("span");
+      s.className = "tag";
+      s.textContent = t.name;
+      tagsBox.appendChild(s);
+    });
+    root.querySelector(".del").addEventListener("click", () => deleteNote(n.id));
+  });
+}
+
+async function loadAll() {
+  try {
+    const notes = await api("/notes");
+    renderNotes(notes);
+  } catch (e) {
+    toast("load failed: " + e.message);
+  }
+}
+
+async function search(q) {
+  try {
+    const hits = await api(`/search?q=${encodeURIComponent(q)}`);
+    if (!hits.length) {
+      notesEl.innerHTML = `<div class="empty">no matches for ${q}</div>`;
+      return;
+    }
+    // Fetch full notes for each hit so we can render uniformly.
+    const fullNotes = await Promise.all(hits.map(h => api(`/notes/${h.note_id}`)));
+    renderNotes(fullNotes);
+  } catch (e) {
+    toast("search failed: " + e.message);
+  }
+}
+
+async function createNote() {
+  const title = $("#title").value.trim();
+  if (!title) { toast("title required"); return; }
+  const body = $("#body").value;
+  const tags = $("#tags").value
+    .split(",").map(s => s.trim()).filter(Boolean);
+  try {
+    await api("/notes", { method: "POST", body: JSON.stringify({ title, body, tags }) });
+    $("#title").value = "";
+    $("#body").value = "";
+    $("#tags").value = "";
+    toast("created");
+    loadAll();
+  } catch (e) {
+    toast("create failed: " + e.message);
+  }
+}
+
+async function deleteNote(id) {
+  if (!confirm(`delete note #${id}?`)) return;
+  try {
+    await api(`/notes/${id}`, { method: "DELETE" });
+    toast("deleted");
+    loadAll();
+  } catch (e) {
+    toast("delete failed: " + e.message);
+  }
+}
+
+$("#create").addEventListener("click", createNote);
+$("#search").addEventListener("click", () => {
+  const q = $("#q").value.trim();
+  if (!q) { loadAll(); return; }
+  search(q);
+});
+$("#reset").addEventListener("click", () => { $("#q").value = ""; loadAll(); });
+$("#q").addEventListener("keydown", (e) => { if (e.key === "Enter") $("#search").click(); });
+
+loadAll();
+</script>
+</body>
+</html>
