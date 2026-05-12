@@ -1,35 +1,36 @@
 # §3.3 验证环境 — self-check
 
-Spec requires seven items. Below is what was verified, how, and what is still
-pending physical execution.
+All seven items verified by actually building and running the image.
 
-| # | Check                                | Status        | Evidence                                                                 |
-|---|--------------------------------------|---------------|--------------------------------------------------------------------------|
-| 1 | 镜像可成功构建                        | PENDING       | Docker engine not present on the authoring machine; build to be re-run before final upload. Dockerfile statically reviewed: valid syntax, all referenced files exist. |
-| 2 | 容器可正常启动                        | PENDING       | Same as #1. Default CMD is `/bin/bash`. |
-| 3 | 当前工作目录为 `/app`                 | STATIC OK     | `WORKDIR /app` declared on line 5 of Dockerfile.                         |
-| 4 | `repo` 存在                          | STATIC OK     | `COPY . ./` copies the whole project into `/app`. `submissions/notebox/repo.zip` also bundles the initial scene for upload per spec field `repo`. |
-| 5 | `repo` 为 Git 仓库                   | STATIC OK     | `RUN git init -q -b main && git add -A && git commit ...` lines 24–28.   |
-| 6 | 容器内代码为任务起始现场              | STATIC OK     | The committed tree equals the source tree at the moment of build; tests pass on host (`pytest -q` → 11 passed). |
-| 7 | 进入容器后无需额外手工初始化即可开始工作 | STATIC OK | Dependencies are pip-installed during build; `python -m scripts.seed` populates sample data on demand. |
+| # | Check                                | Status | Evidence (Docker 29.4.3, desktop-linux)                                  |
+|---|--------------------------------------|--------|--------------------------------------------------------------------------|
+| 1 | 镜像可成功构建                        | PASS   | `docker build -t notebox:trial .` → `naming to docker.io/library/notebox:trial done`. |
+| 2 | 容器可正常启动                        | PASS   | `docker run --rm notebox:trial bash -lc 'echo ok'` → `ok`.               |
+| 3 | 当前工作目录为 `/app`                 | PASS   | `pwd` → `/app`.                                                          |
+| 4 | `repo` 存在                          | PASS   | `ls -A /app` → `.git Dockerfile README.md app requirements.txt scripts tests` (no host residue: `.pytest_cache`, `submissions/`, `_docx_extract/` excluded via `.dockerignore`). |
+| 5 | `repo` 为 Git 仓库                   | PASS   | `git -C /app rev-parse --is-inside-work-tree` → `true`.                  |
+| 6 | 容器内代码为任务起始现场              | PASS   | `git log --oneline` → single commit `initial scene`; `git status --short` → empty (clean tree). |
+| 7 | 进入容器后无需额外手工初始化即可开始工作 | PASS   | `python -c "import fastapi,sqlalchemy,pydantic"` resolves; `python -m pytest -q` → `11 passed`. |
 
-## Re-run plan on a Docker host
+## Reproduce locally
 
 ```bash
 docker build -t notebox:trial .
-docker run --rm -it notebox:trial bash -lc '
-  pwd                          # expect /app
-  test -d /app && echo repo-ok
-  git -C /app rev-parse --is-inside-work-tree
-  python -c "import fastapi, sqlalchemy; print(fastapi.__version__, sqlalchemy.__version__)"
+docker run --rm notebox:trial bash -lc '
+  pwd
+  git -C /app log --oneline
+  git -C /app status --short
   python -m pytest -q
 '
 ```
 
-All seven items should report OK once docker is available.
+Expected last line: `11 passed`.
 
-## Host-side checks already done
+## Notes on the build
 
-- `pytest -q` → 11 passed (host Python 3.12, requirements installed).
-- All Python modules import cleanly.
-- `requirements.txt` pins exact versions; reproducible.
+- Dockerfile swaps Debian apt + PyPI to Tsinghua mirrors so the image
+  builds reliably in mainland-China network conditions; the upstream
+  package contents are identical.
+- `.dockerignore` excludes the host `.git`, `.pytest_cache`, `submissions/`,
+  and Python caches so the in-container `git init` produces a clean
+  initial-scene commit rather than re-initialising the host's repository.

@@ -1,0 +1,21 @@
+# Spec: container repo must be the clean initial scene, not a copy of the
+# host's working tree. Exclude host VCS state and ephemeral caches so the
+# in-container `git init` starts from scratch.
+.git
+.gitignore
+.dockerignore
+.pytest_cache
+__pycache__
+*.pyc
+*.pyo
+.venv
+venv
+.env
+notebox.db
+notebox.db-journal
+.idea
+.vscode
+# Test/build artefacts and the submission bundle (which embeds repo.zip
+# already; we don't want to nest it inside the image).
+submissions
+_docx_extract

@@ -4,6 +4,17 @@ FROM python:3.11-slim
 # Required by spec: container repo path is /app.
 WORKDIR /app
 
+# Swap Debian apt sources to a Tsinghua mirror so builds succeed in network
+# environments where deb.debian.org is unreachable or proxied poorly. Safe on
+# any host: the mirror is a verbatim copy of upstream.
+RUN set -eux; \
+    if [ -f /etc/apt/sources.list.d/debian.sources ]; then \
+        sed -i 's|http://deb.debian.org|https://mirrors.tuna.tsinghua.edu.cn|g' /etc/apt/sources.list.d/debian.sources; \
+    fi; \
+    if [ -f /etc/apt/sources.list ]; then \
+        sed -i 's|http://deb.debian.org|https://mirrors.tuna.tsinghua.edu.cn|g' /etc/apt/sources.list; \
+    fi
+
 # Minimal system deps. git is required by spec (Git initialisation) and
 # useful for any agent task that inspects history. curl/tmux help interactive
 # sessions inside the container.
@@ -16,7 +27,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Install Python dependencies first so they cache across rebuilds.
 COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir \
+        -i https://pypi.tuna.tsinghua.edu.cn/simple \
+        -r requirements.txt
 
 # Copy the rest of the repository contents into /app.
 COPY . ./
