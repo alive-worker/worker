@@ -1,3 +1,0 @@
-# Shell scripts MUST keep LF endings or `#!/bin/sh` breaks inside the container.
-*.sh text eol=lf
-Dockerfile text eol=lf
