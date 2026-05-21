@@ -1,0 +1,28 @@
+# Copy the relevant block into your ~/.ssh/config, then point Trae CN at the
+# "docker-container" host. Default login: user root / password "password"
+# (override at build time with --build-arg/ENV SSH_PASSWORD).
+
+# --- Local Docker (container runs on the same machine as Trae) --------------- #
+# Use this if you ran `docker run -d -p 2222:22 notebox` locally.
+Host docker-container
+    HostName localhost
+    User root
+    Port 2222
+    StrictHostKeyChecking no
+    UserKnownHostsFile /dev/null
+
+# --- Remote devbox (container runs on a remote host, reached via a jump) ----- #
+# Use this if the container runs on a remote devbox and you tunnel in.
+# Uncomment and set HostName to the devbox IP.
+#
+# Host devbox
+#     HostName 10.x.x.x
+#     User root
+#
+# Host docker-container-remote
+#     HostName localhost
+#     User root
+#     Port 2222
+#     ProxyJump devbox
+#     StrictHostKeyChecking no
+#     UserKnownHostsFile /dev/null

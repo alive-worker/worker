@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c ' *)",
+      "Bash(python -c \"import zipfile; z=zipfile.ZipFile\\('submissions/notebox/repo.zip'\\); [print\\(n\\) for n in z.namelist\\(\\)[:60]]\")",
+      "Bash(python -c \"print\\(open\\('submissions/notebox/screenshots/dockerfile_run.txt',encoding='utf-8'\\).read\\(\\)[:1500]\\)\")",
+      "Bash(python -c \"import zipfile; print\\(zipfile.ZipFile\\('submissions/notebox/repo.zip'\\).read\\('requirements.txt'\\).decode\\(\\)\\)\")",
+      "Bash(python -c \"import zipfile; print\\(zipfile.ZipFile\\('submissions/notebox/repo.zip'\\).read\\('Dockerfile'\\).decode\\(\\)[:400]\\)\")",
+      "Bash(rm -f d:/m-project/src/worker/docs/_trae_doc_extracted.txt)",
+      "Bash(docker --version)",
+      "Bash(echo \"exit=$?\")",
+      "Bash(docker info *)",
+      "PowerShell(docker rm -f notebox 2>$null)",
+      "PowerShell(docker run -d -p 2222:22 --name notebox notebox-trae)",
+      "PowerShell(docker exec notebox sh -c \"ss -tlnp 2>/dev/null | grep :22 || netstat -tlnp 2>/dev/null | grep :22 || echo 'check via pgrep:'; pgrep -a sshd\")",
+      "PowerShell(docker exec notebox sh -c \"cd /app && ls && echo '--- git ---' && git log --oneline && echo '--- pytest ---' && pytest -q 2>&1 | tail -5\")"
+    ]
+  }
+}
